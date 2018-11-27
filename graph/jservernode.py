@@ -7,20 +7,22 @@ from bsonrpc import request, service_class
 from bsonrpc.exceptions import FramingError
 from bsonrpc.framing import (
 	JSONFramingNetstring, JSONFramingNone, JSONFramingRFC7464)
+import json
 
-
-# Class providing functions for the client to use:
 @service_class
 class ServerServices(object):
+    @request
+    def decoder (self, graph):
+        graph = json.decoder(graph)
+        increment(graph)
+        graph = json.dumps(graph, default=lambda o: o.__dict__)
 
-  @request
-  def swapper(self, txt):
-    return ''.join(reversed(list(txt)))
 
-  @request
-  def nop(self, txt):
-    print(txt)
-    return txt
+def increment(graph):
+    graph.val += 1;
+    for c in graph.children:
+        increment(c)
+
 
 # Quick-and-dirty TCP Server:
 ss = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
